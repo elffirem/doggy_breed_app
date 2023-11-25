@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:doggy_app/Data/app_constant.dart';
 import 'package:doggy_app/Models/breed_model.dart';
 import 'package:doggy_app/Screens/settings_screen.dart';
+import 'package:doggy_app/Utils/custom_modal.dart';
 import 'package:doggy_app/bloc/breed_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

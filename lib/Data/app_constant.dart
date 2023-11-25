@@ -27,8 +27,11 @@ const TextStyle body = TextStyle(
     color: kWhiteColor,
     fontWeight: FontWeight.w500,
     fontSize: 16,
-    letterSpacing: 0.01);
+    letterSpacing: 0.16);
 
 //Standart sizes
 const double toolbarHeight=60;
 const double standartPadding=16;
+
+//standart radius
+const double kBorder=8;

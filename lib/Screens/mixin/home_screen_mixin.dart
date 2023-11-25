@@ -112,6 +112,7 @@ mixin HomeScreenMixin on State<HomeScreen> {
           children: [
             Expanded(
                 child: GridView.builder(
+              padding: const EdgeInsets.all(8),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 1,
@@ -152,32 +153,69 @@ mixin HomeScreenMixin on State<HomeScreen> {
       elevation: 0,
     );
   }
+  Future<void> _showDetails(BreedModel breed) async {
+    await showDialog(
+        context: context,
+        builder: (context) => CustomModal(breed: breed));
+  }
 
   Widget _buildGridItem(BreedModel breed) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Expanded(
-            child: breed.imageUrl != null
-                ? Image.network(
-                    breed.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(child: Icon(Icons.broken_image));
-                    },
-                  )
-                : const Center(
-                    child: Icon(Icons.image_not_supported)), // Yer tutucu ikon
+    return InkWell(
+      onTap: () {
+        _showDetails(breed);
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Container(
+          height: 163,
+          width: 163,
+          decoration: const BoxDecoration(
+              color: kSystemGray,
+              borderRadius: BorderRadius.all(Radius.circular(kBorder))),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: <Widget>[
+              Positioned.fill(
+                child: breed.imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                            Radius.circular(kBorder)),
+                        child: Image.network(
+                          breed.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(child: Icon(Icons.broken_image));
+                          },
+                        ),
+                      )
+                    : const Center(child: Icon(Icons.image_not_supported)),
+              ),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Container(
+                  height: 38,
+                  width: 100,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                      color: kBlackColor.withOpacity(0.4),
+                      borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(kBorder),
+                          bottomLeft: Radius.circular(kBorder))),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(kBorder),
+                      child: Text(
+                       overflow: TextOverflow.ellipsis,
+                        breed.name,
+                        style: body,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              breed.name,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
