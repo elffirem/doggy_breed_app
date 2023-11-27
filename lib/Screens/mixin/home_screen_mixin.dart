@@ -36,6 +36,7 @@ mixin HomeScreenMixin on State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    fetchBreedNames();
   }
 
   void fetchBreedNames() async {
@@ -48,15 +49,35 @@ mixin HomeScreenMixin on State<HomeScreen> {
 
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body);
-      var breeds = jsonData["message"] as Map;
+      var breeds = jsonData["message"] as Map<String, dynamic>;
+
+      List<BreedModel> tempItems = [];
+      for (var breed in breeds.keys) {
+        var imageUrl = await _fetchBreedImageUrl(breed);
+        tempItems.add(BreedModel(
+          name: breed,
+          subBreeds: List<String>.from(breeds[breed]),
+          imageUrl: imageUrl,
+        ));
+      }
 
       setState(() {
-        items = breeds.keys.map((key) {
-          return {'breed': key, 'subBreeds': breeds[key]};
-        }).toList();
+        items = tempItems;
       });
     } else {
       print('Failed to load breeds');
+    }
+  }
+
+  Future<String> _fetchBreedImageUrl(String breed) async {
+    var response = await http
+        .get(Uri.parse("https://dog.ceo/api/breed/$breed/images/random"));
+    if (response.statusCode == 200) {
+      var jsonData = jsonDecode(response.body);
+      return jsonData["message"];
+    } else {
+      debugPrint('Failed to load image for breed: $breed');
+      return ''; // Varsayılan bir resim URL'si veya boş bir string dönebilirsiniz.
     }
   }
 
@@ -65,7 +86,7 @@ mixin HomeScreenMixin on State<HomeScreen> {
       bottom: standartPadding,
       child: Padding(
         padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom,right:16,left:16),
         child: SizedBox(
           width: MediaQuery.of(context).size.width,
           height: 64,
@@ -84,19 +105,14 @@ mixin HomeScreenMixin on State<HomeScreen> {
                   hintText: "Search",
                   hintStyle: body.copyWith(color: kSecondaryLabelLight)),
               onChanged: (searchQuery) {
-                // Get the search query
-                searchQuery = searchQuery.toLowerCase();
-                // Perform the search operation and add the results to a list
-                filteredItems = items.where((category) {
-                  // Convert to lowercase for more effective search
-                  String categoryName =
-                      category.categoryName.toLowerCase() ?? '';
-                  return categoryName.contains(searchQuery);
-                }).toList();
-                // Display the results from the new list
-                setState(() {
-                  // Update filtered list
-                });
+                //Bazen çalışıyor bazen exception veriyor
+
+                // searchQuery = searchQuery.toLowerCase();
+                // setState(() {
+                //   filteredItems = items.where((breed) {
+                //     return breed.name.toLowerCase().contains(searchQuery);
+                //   }).toList();                
+                // });
               },
             ),
           ),
@@ -117,9 +133,13 @@ mixin HomeScreenMixin on State<HomeScreen> {
                 crossAxisCount: 2,
                 childAspectRatio: 1,
               ),
-              itemCount: breeds.length,
+              itemCount:
+                  filteredItems.isEmpty ? breeds.length : filteredItems.length,
               itemBuilder: (context, index) {
-                return _buildGridItem(breeds[index]);
+                BreedModel breed = filteredItems.isEmpty
+                    ? breeds[index]
+                    : filteredItems[index];
+                return _buildGridItem(breed);
               },
             )),
           ],
@@ -153,10 +173,10 @@ mixin HomeScreenMixin on State<HomeScreen> {
       elevation: 0,
     );
   }
+
   Future<void> _showDetails(BreedModel breed) async {
     await showDialog(
-        context: context,
-        builder: (context) => CustomModal(breed: breed));
+        context: context, builder: (context) => CustomModal(breed: breed));
   }
 
   Widget _buildGridItem(BreedModel breed) {
@@ -178,13 +198,14 @@ mixin HomeScreenMixin on State<HomeScreen> {
               Positioned.fill(
                 child: breed.imageUrl != null
                     ? ClipRRect(
-                        borderRadius: const BorderRadius.all(
-                            Radius.circular(kBorder)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(kBorder)),
                         child: Image.network(
                           breed.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Center(child: Icon(Icons.broken_image));
+                            return const Center(
+                                child: Icon(Icons.broken_image));
                           },
                         ),
                       )
@@ -205,7 +226,7 @@ mixin HomeScreenMixin on State<HomeScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(kBorder),
                       child: Text(
-                       overflow: TextOverflow.ellipsis,
+                        overflow: TextOverflow.ellipsis,
                         breed.name,
                         style: body,
                       ),
@@ -221,19 +242,23 @@ mixin HomeScreenMixin on State<HomeScreen> {
   }
 
   Widget _buildBottomBar() {
-    return Container(
-      height: 98,
-      decoration: BoxDecoration(
-        border: Border.all(color: kSystemGray, width: 2),
-        color: kSecondarySystemBackgroundGray,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildBottomBarItem(Icons.home_filled, "Home", 0),
-          _buildDivider(),
-          _buildBottomBarItem(Icons.build_outlined, "Settings", 1),
-        ],
+    return ClipRRect(
+borderRadius:
+                        const BorderRadius.only(topRight:  Radius.circular(80),topLeft: Radius.circular(80) ),
+      child: Container(
+        height: 98,
+        decoration: BoxDecoration(
+          border: Border.all(color: kSystemGray, width: 2),
+          color: kSecondarySystemBackgroundGray,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            _buildBottomBarItem(Icons.home_filled, "Home", 0),
+            _buildDivider(),
+            _buildBottomBarItem(Icons.build_outlined, "Settings", 1),
+          ],
+        ),
       ),
     );
   }
@@ -260,12 +285,10 @@ mixin HomeScreenMixin on State<HomeScreen> {
   }
 
   Widget _buildDivider() {
-    return const SizedBox(
+    return  Container(
       height: 24,
-      child: VerticalDivider(
-        color: kSystemGray,
-        width: 2,
-      ),
+      width:3,
+      color:kSystemGray
     );
   }
 

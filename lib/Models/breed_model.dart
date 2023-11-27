@@ -1,18 +1,24 @@
 import 'package:equatable/equatable.dart';
 
 class BreedModel extends Equatable {
-  final String name; 
-  final List<String> subBreeds; 
-  String? imageUrl; 
+  final String name;
+  final List<String> subBreeds;
+  String? imageUrl;
 
   BreedModel({required this.name, this.subBreeds = const [], this.imageUrl});
 
+    BreedModel.copy(BreedModel breed) 
+    : name = breed.name,
+      subBreeds = List<String>.from(breed.subBreeds),
+      imageUrl = breed.imageUrl;
 
   factory BreedModel.fromJson(Map<String, dynamic> json) {
     return BreedModel(
-      name: json['name'],
-      subBreeds: List<String>.from(json['subBreeds'] ?? []),
-      imageUrl: json['imageUrl'],
+      name: json['name'] as String? ?? '', 
+      subBreeds: (json['subBreeds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ?? [],
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 
@@ -29,8 +35,8 @@ class BreedModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [name, subBreeds, imageUrl]; 
+  List<Object?> get props => [name, subBreeds, imageUrl];
 
   @override
-  bool get stringify => true; 
+  bool get stringify => true;
 }
