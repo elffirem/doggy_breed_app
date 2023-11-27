@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 const Color kWhiteColor = Colors.white;
 const Color kBlackColor = Colors.black;
 const Color kPrimaryColor = Color(0xff0055D3);
+const Color kLightPrimaryColor = Color(0xff0085FF);
 const Color kSystemGray = Color(0xffE5E5EA);
 const Color kSecondarySystemBackgroundGray = Color(0xffF2F2F7);
 const Color kSecondaryLabelLight = Color(0xff3c3c4399);

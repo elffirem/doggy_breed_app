@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> with HomeScreenMixin {
           } else if (state is BreedLoaded) {
             return _buildGridView(state.breeds);
           } else {
-            return const Center(child: Text('Bir hata oluştu'));
+            return const Center(child: Text('There is an unexpected error'));
           }
         },
       ),

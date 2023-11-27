@@ -19,19 +19,18 @@ class BreedBloc extends Bloc<BreedEvent, BreedState> {
     try {
       var breedsResponse =
           await http.get(Uri.parse("https://dog.ceo/api/breeds/list/all"));
-      // TODO(improvement): jsonDecode can be called from another thread to improve performance
       var breedsData = jsonDecode(breedsResponse.body);
       var breeds = breedsData["message"] as Map<String, dynamic>;
 
       List<BreedModel> breedModels = [];
       for (var breed in breeds.keys) {
+         List<String> subBreeds = List<String>.from(breeds[breed]);
         String imageUrl = '';
 
         http.Response imageUrlResponse = await http
             .get(Uri.parse("https://dog.ceo/api/breed/$breed/images"));
 
         if (imageUrlResponse.statusCode == 200) {
-          // TODO(improvement): jsonDecode can be called from another thread to improve performance
           var imageUrlData = jsonDecode(imageUrlResponse.body);
 
           List<String> imageUrlList = imageUrlData["message"].cast<String>();
@@ -46,7 +45,7 @@ class BreedBloc extends Bloc<BreedEvent, BreedState> {
 
         /// If the imageUrl is not empty, add it to the list
         if (imageUrl.isNotEmpty) {
-          breedModels.add(BreedModel(name: breed, imageUrl: imageUrl));
+          breedModels.add(BreedModel(name: breed, imageUrl: imageUrl, subBreeds: subBreeds));
         }
       }
 
